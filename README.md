@@ -1,0 +1,2 @@
+# loanusecase
+Usecase solving 
