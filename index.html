@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LoanIQ — Credit Review Dashboard</title>
+<style>
+:root{
+  --bg:#f5f7fb;--panel:#fff;--ink:#182230;--muted:#697586;--line:#e6eaf0;
+  --blue:#315bea;--blue2:#eef2ff;--green:#16845b;--greenbg:#eaf8f2;
+  --amber:#b56b00;--amberbg:#fff6e3;--red:#c53939;--redbg:#fff0f0;
+  --shadow:0 10px 30px rgba(22,35,55,.07);--r:18px
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}
+button,input{font:inherit}
+.top{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 4%;position:sticky;top:0;z-index:20}
+.logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}.logoBox{width:38px;height:38px;border-radius:11px;background:#315bea;color:#fff;display:grid;place-items:center}
+.nav{display:flex;gap:8px}.nav span{padding:9px 13px;border-radius:9px;color:var(--muted);font-size:13px}.nav .active{background:var(--blue2);color:var(--blue);font-weight:700}
+.wrap{width:min(1250px,92%);margin:30px auto 70px}
+.hero{display:flex;justify-content:space-between;align-items:end;gap:25px;margin-bottom:22px}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--blue);font-weight:800;margin-bottom:8px}
+h1{font-size:36px;line-height:1.1;margin:0 0 8px;letter-spacing:-.035em}.hero p{margin:0;color:var(--muted);max-width:690px;line-height:1.55}
+.date{color:var(--muted);font-size:12px;text-align:right}
+.upload{background:#17223a;color:#fff;border-radius:20px;padding:23px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.upload h2{margin:0 0 5px;font-size:18px}.upload p{margin:0;color:#b9c4d7;font-size:13px}
+.drop{min-width:350px;border:1px dashed #7180a3;border-radius:13px;padding:13px 16px;background:#202d49;display:flex;align-items:center;gap:12px}
+.drop label{background:#fff;color:#17223a;padding:10px 15px;border-radius:9px;font-weight:750;cursor:pointer;font-size:13px;white-space:nowrap}
+.drop .name{font-size:12px;color:#c9d3e5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+input[type=file]{display:none}
+.primary{margin-top:10px;width:100%;padding:11px;border:0;border-radius:10px;background:var(--blue);color:#fff;font-weight:750;cursor:pointer}.primary:disabled{opacity:.5;cursor:not-allowed}
+#results{display:none}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:22px 0}
+.metric{background:#fff;border:1px solid var(--line);border-radius:15px;padding:17px;box-shadow:var(--shadow)}
+.metric .small{font-size:12px;color:var(--muted)}.metric .big{font-size:25px;font-weight:850;margin:7px 0}.metric .sub{font-size:11px;color:var(--muted)}
+.mainGrid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:21px}
+.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}.title h3{margin:0;font-size:17px}.badge{font-size:11px;font-weight:750;padding:6px 9px;border-radius:999px;background:#f2f4f8;color:#586274}
+.assess{display:grid;grid-template-columns:145px 1fr;gap:20px;align-items:center}
+.gauge{height:145px;border-radius:50%;background:conic-gradient(var(--amber) 0 48%,#edf0f5 48% 100%);display:grid;place-items:center;position:relative}
+.gauge:after{content:"";position:absolute;width:108px;height:108px;border-radius:50%;background:#fff}.gauge span{z-index:1;font-size:27px;font-weight:900;color:var(--amber)}
+.level{font-size:30px;font-weight:900;color:var(--amber)}.recommend{margin-top:7px;font-size:14px;font-weight:700}.reason{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:15px}.levelBox{padding:11px;border-radius:11px;text-align:center;font-size:12px;font-weight:750;border:1px solid var(--line)}.levelBox b{display:block;font-size:15px;margin-bottom:3px}.low{background:var(--greenbg);color:var(--green)}.medium{background:var(--amberbg);color:var(--amber)}.high{background:var(--redbg);color:var(--red)}
+.chart{height:205px;display:flex;align-items:end;gap:18px;padding:18px 8px 4px;border-bottom:1px solid var(--line)}
+.bar{flex:1;position:relative;height:100%;display:flex;align-items:end;justify-content:center}.bar i{width:48px;border-radius:8px 8px 2px 2px;background:#315bea;display:block;transition:height .5s ease}.bar:nth-child(2) i{background:#e3a22f}.bar:nth-child(3) i{background:#d45454}.bar em{position:absolute;bottom:-23px;font-size:11px;color:var(--muted);font-style:normal}.bar strong{position:absolute;top:0;font-size:11px;transition:top .5s ease}
+.risk{display:flex;gap:12px;padding:13px;border-radius:12px;border:1px solid #f2d1d1;background:var(--redbg);margin-bottom:9px}.riskDot{width:9px;height:9px;border-radius:50%;background:var(--red);margin-top:5px;flex:none}.risk b{font-size:13px}.risk p{margin:3px 0 0;font-size:12px;color:#7c4a4a;line-height:1.4}
+.fields{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden}.field{padding:13px 14px;border-bottom:1px solid var(--line)}.field:nth-child(odd){border-right:1px solid var(--line)}.field:nth-last-child(-n+2){border-bottom:0}.fl{font-size:11px;color:var(--muted);margin-bottom:4px}.fv{font-size:13px;font-weight:750}.missing{color:#9aa4b2;font-style:italic;font-weight:500}
+.summary{margin-top:18px}.summaryItem{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.5}.summaryItem:last-child{border-bottom:0}.num{width:26px;height:26px;border-radius:8px;background:var(--blue2);color:var(--blue);display:grid;place-items:center;font-weight:850;flex:none}
+.loading{display:none;text-align:center;padding:15px;color:#c8d1e2;font-size:12px}.spin{display:inline-block;width:16px;height:16px;border:2px solid #64728e;border-top-color:#fff;border-radius:50%;animation:sp 1s linear infinite;vertical-align:middle;margin-right:7px}@keyframes sp{to{transform:rotate(360deg)}}
+.err{display:none;margin-top:10px;background:#fff0f0;color:#9a2b2b;padding:10px;border-radius:9px;font-size:12px}
+.meta{margin-top:15px;color:var(--muted);font-size:11px;display:flex;gap:8px;flex-wrap:wrap}.meta span{padding:6px 8px;background:#f6f7fa;border-radius:7px}
+@media(max-width:900px){.upload{grid-template-columns:1fr}.drop{min-width:0}.metrics{grid-template-columns:1fr 1fr}.mainGrid{grid-template-columns:1fr}}
+@media(max-width:560px){.nav{display:none}.hero{display:block}.date{text-align:left;margin-top:10px}.metrics{grid-template-columns:1fr}.assess{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.field:nth-child(odd){border-right:0}.field:nth-last-child(-n+2){border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.drop{display:block}.drop label{display:inline-block;margin-bottom:8px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><div class="logoBox">L</div>LoanIQ</div>
+  <div class="nav"><span class="active">Application Review</span><span>Risk Analytics</span><span>Reports</span></div>
+</header>
+
+<main class="wrap">
+<section class="hero">
+  <div><div class="kicker">Credit intelligence</div><h1>Loan application review</h1><p>Turn application documents into a clear credit view. Review extracted information, customer risk level and signals requiring verification before making a decision.</p></div>
+  <div class="date">AI-assisted review<br><b>Human approval required</b></div>
+</section>
+
+<section class="upload">
+  <div><h2>Analyse a loan application</h2><p>Upload one PDF containing the application and supporting information.</p></div>
+  <div>
+    <div class="drop"><label for="fileInput">Choose PDF</label><div class="name" id="fileName">No document selected</div><input id="fileInput" type="file" accept=".pdf,application/pdf"></div>
+    <button class="primary" id="analyze" disabled>Run credit review</button>
+  </div>
+  <div class="loading" id="loading"><span class="spin"></span>Extracting fields, generating summary and checking risk signals...</div>
+  <div class="err" id="error"></div>
+</section>
+
+<section id="results">
+  <div class="metrics">
+    <div class="metric"><div class="small">Loan amount</div><div class="big" id="mLoan">—</div><div class="sub">Requested amount</div></div>
+    <div class="metric"><div class="small">Monthly income</div><div class="big" id="mIncome">—</div><div class="sub">Reported income</div></div>
+    <div class="metric"><div class="small">Risk signals</div><div class="big" id="mRisks">0</div><div class="sub">Items requiring attention</div></div>
+    <div class="metric"><div class="small">Document</div><div class="big" id="mPages">—</div><div class="sub">Pages processed</div></div>
+  </div>
+
+  <div class="mainGrid">
+    <section class="card">
+      <div class="title"><h3>Customer risk profile</h3><span class="badge">AI assessment</span></div>
+      <div class="assess">
+        <div class="gauge" id="gauge"><span id="score">48</span></div>
+        <div><div class="level" id="riskLevel">MEDIUM</div><div class="recommend" id="recommendation">Request additional information</div><div class="reason" id="riskReason">Risk level is based on extracted application information and detected rule-based signals. It should support, not replace, credit review.</div></div>
+      </div>
+      <div class="levels"><div class="levelBox low"><b>LOW</b>Lower concern</div><div class="levelBox medium"><b>MEDIUM</b>Verify details</div><div class="levelBox high"><b>HIGH</b>Escalate review</div></div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h3>Risk distribution</h3><span class="badge">This application</span></div>
+      <div class="chart">
+        <div class="bar"><strong id="distLowPct">26%</strong><i id="distLowBar" style="height:26%"></i><em>Low</em></div>
+        <div class="bar"><strong id="distMedPct">48%</strong><i id="distMedBar" style="height:48%"></i><em>Medium</em></div>
+        <div class="bar"><strong id="distHighPct">26%</strong><i id="distHighBar" style="height:26%"></i><em>High</em></div>
+      </div>
+      <div class="reason" id="distNote" style="margin-top:22px">Reflects this application's assessed risk profile — MEDIUM at 48%.</div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h3>Risk signals</h3><span class="badge" id="riskBadge">0 flagged</span></div>
+      <div id="risks"><div class="noRisk">No risk signals identified.</div></div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h3>Extracted customer profile</h3><span class="badge">Document data</span></div>
+      <div class="fields" id="fields"></div>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <section class="card summary" style="grid-column:1/-1">
+      <div class="title"><h3>Five-point application summary</h3><span class="badge">Decision brief</span></div>
+      <div id="summary"></div>
+    </section>
+  </div>
+</section>
+</main>
+
+<script>
+const input=document.getElementById('fileInput'),nameEl=document.getElementById('fileName'),btn=document.getElementById('analyze');
+const error=document.getElementById('error'),loading=document.getElementById('loading'),results=document.getElementById('results');
+let file=null;
+input.onchange=()=>{file=input.files[0]; if(!file)return; if(!file.name.toLowerCase().endsWith('.pdf'))return showErr('Please select a PDF file.'); if(file.size>10*1024*1024)return showErr('File must be 10 MB or smaller.'); nameEl.textContent=file.name;btn.disabled=false;error.style.display='none'};
+
+btn.onclick=async()=>{
+ if(!file)return;
+ const fd=new FormData();fd.append('file',file);btn.disabled=true;loading.style.display='block';error.style.display='none';results.style.display='none';
+ try{const r=await fetch('/api/analyze',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error(d.detail||'Analysis failed.');render(d)}
+ catch(e){showErr(e.message||'Unable to connect to the analysis service.')}
+ finally{btn.disabled=false;loading.style.display='none'}
+};
+function render(d){
+ const a=d.application_data||{},ass=d.assessment||{},doc=d.document||{},risks=Array.isArray(d.risk_flags)?d.risk_flags:[];
+ const level=String(ass.risk_level||'MEDIUM').toUpperCase();
+ document.getElementById('riskLevel').textContent=level;
+ document.getElementById('recommendation').textContent=ass.recommendation||'Human review required';
+ document.getElementById('riskReason').textContent=ass.reason||'Review detected signals and verify application details before approval.';
+ const score=level==='LOW'?22:level==='HIGH'?82:48;document.getElementById('score').textContent=score;
+ const gauge=document.getElementById('gauge');gauge.style.background=`conic-gradient(${level==='LOW'?'#16845b':level==='HIGH'?'#c53939':'#b56b00'} 0 ${score}%,#edf0f5 ${score}% 100%)`;
+ updateDistribution(level,score);
+ document.getElementById('mLoan').textContent=money(a.loan_amount);document.getElementById('mIncome').textContent=money(a.monthly_income);document.getElementById('mRisks').textContent=risks.length;document.getElementById('mPages').textContent=doc.pages??'—';
+ document.getElementById('riskBadge').textContent=risks.length+' flagged';
+ document.getElementById('risks').innerHTML=risks.length?risks.map(x=>`<div class="risk"><span class="riskDot"></span><div><b>Attention required</b><p>${esc(x)}</p></div></div>`).join(''):'<div class="noRisk">No risk signals identified by the current checks.</div>';
+ const labels={applicant_name:'Applicant',age:'Age',monthly_income:'Monthly income',loan_amount:'Loan amount',loan_purpose:'Purpose',co_applicant:'Co-applicant',employment:'Employment',phone_number:'Phone',address:'Address',income_proof_present:'Income proof'};
+ document.getElementById('fields').innerHTML=Object.entries(labels).map(([k,l])=>{let v=a[k],empty=v===null||v===undefined||v==='';return `<div class="field"><div class="fl">${l}</div><div class="fv ${empty?'missing':''}">${empty?'Not stated in document':esc(format(v,k))}</div></div>`}).join('');
+ document.getElementById('meta').innerHTML=`<span>${esc(doc.filename||file.name)}</span><span>${doc.pages??0} page(s)</span><span>${doc.characters_extracted??0} characters extracted</span>`;
+ let arr=String(d.summary||'').split(/\\n+/).map(x=>x.replace(/^[-•*]\\s*/,'').trim()).filter(Boolean).slice(0,5);
+ document.getElementById('summary').innerHTML=(arr.length?arr:['No summary generated.']).map((x,i)=>`<div class="summaryItem"><div class="num">${i+1}</div><div>${esc(x)}</div></div>`).join('');
+ results.style.display='block';results.scrollIntoView({behavior:'smooth'});
+}
+// The Risk distribution bars mirror THIS application's assessed level:
+// the assessed level's own bar dominates (majority share), and the
+// remaining percentage is split across the other two levels (the level
+// adjacent to the assessed one gets the larger share of what's left).
+function updateDistribution(level,score){
+ const order=['LOW','MEDIUM','HIGH'];
+ let idx=order.indexOf(level);
+ if(idx===-1){level='MEDIUM';idx=1;}
+ const others=order.filter((_,i)=>i!==idx);
+ const dominant=level==='MEDIUM'?60:72;
+ const remainder=100-dominant;
+ const weights=others.map(o=>1/Math.abs(order.indexOf(o)-idx));
+ const firstVal=Math.round(remainder*weights[0]/(weights[0]+weights[1]));
+ const secondVal=remainder-firstVal;
+ const values={LOW:0,MEDIUM:0,HIGH:0};
+ values[level]=dominant;values[others[0]]=firstVal;values[others[1]]=secondVal;
+ document.getElementById('distLowBar').style.height=values.LOW+'%';
+ document.getElementById('distMedBar').style.height=values.MEDIUM+'%';
+ document.getElementById('distHighBar').style.height=values.HIGH+'%';
+ document.getElementById('distLowPct').textContent=values.LOW+'%';
+ document.getElementById('distMedPct').textContent=values.MEDIUM+'%';
+ document.getElementById('distHighPct').textContent=values.HIGH+'%';
+ document.getElementById('distNote').textContent=`Reflects this application's assessed risk profile — ${level} at ${dominant}%.`;
+}
+function money(v){let n=Number(v);return Number.isFinite(n)?new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(n):'—'}
+function format(v,k){if(k==='income_proof_present')return v===true?'Yes':v===false?'No':String(v);if(k==='monthly_income'||k==='loan_amount')return money(v);return String(v)}
+function esc(v){return String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;")}
+function showErr(x){error.textContent=x;error.style.display='block'}
+</script>
+</body>
+</html>
